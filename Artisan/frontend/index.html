@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>AI Artisan Marketplace Assistant</title>
+    <style>
+        body { font-family: Arial, sans-serif; max-width: 800px; margin: auto; padding: 20px; }
+        input, textarea, button { display: block; margin: 10px 0; width: 100%; padding: 10px; }
+        img { max-width: 100%; margin: 10px 0; }
+        .output { border: 1px solid #ddd; padding: 15px; margin-top: 20px; }
+    </style>
+</head>
+<body>
+    <h1>AI Artisan Marketplace Assistant</h1>
+
+    <form id="productForm">
+        <input type="text" name="title" placeholder="Product Title" required>
+        <input type="text" name="keywords" placeholder="Keywords (comma separated)" required>
+        <input type="file" name="photo" accept="image/*" required>
+        <button type="submit">Generate AI Product Details</button>
+    </form>
+
+    <div class="output" id="output" style="display:none;">
+        <h2 id="headline"></h2>
+        <img id="photo" src="" alt="Product Photo">
+        <h3>Product Story:</h3>
+        <p id="story"></p>
+        <h3>Marketing Captions:</h3>
+        <ul id="captions"></ul>
+        <h3>SEO Keywords:</h3>
+        <p id="seo_keywords"></p>
+        <h3>Suggested Price:</h3>
+        <p id="suggested_price"></p>
+    </div>
+
+    <script>
+        const form = document.getElementById('productForm');
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const formData = new FormData(form);
+            const response = await fetch('/api/create-product', {
+                method: 'POST',
+                body: formData
+            });
+            const data = await response.json();
+
+            document.getElementById('output').style.display = 'block';
+            document.getElementById('headline').textContent = data.headline;
+            document.getElementById('photo').src = data.photo_url;
+            document.getElementById('story').textContent = data.story || '';
+            
+            const captionsList = document.getElementById('captions');
+            captionsList.innerHTML = '';
+            if(data.captions && data.captions.length > 0){
+                data.captions.forEach(c => {
+                    const li = document.createElement('li');
+                    li.textContent = c;
+                    captionsList.appendChild(li);
+                });
+            }
+
+            document.getElementById('seo_keywords').textContent = (data.seo_keywords || []).join(', ');
+            document.getElementById('suggested_price').textContent = data.suggested_price || '';
+        });
+    </script>
+</body>
+</html>
